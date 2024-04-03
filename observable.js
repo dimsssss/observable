@@ -9,5 +9,29 @@ export default function Observable(execute) {
 }
 
 Observable.prototype.subscribe = function(subscriber) {
-    return this._execute(subscriber)
+    return this._execute(new Subscribe(subscriber))
+}
+
+function Subscribe(observableSpec) {
+    this._isCompleted = false
+    this._isError = false
+    this._observableSpec = observableSpec
+}
+
+Subscribe.prototype.onNext = function(value) {
+    if (this._isCompleted) {
+        return
+    }
+    return this._observableSpec.onNext(value)
+}
+
+Subscribe.prototype.onError = function(error) {
+    this._isError = true
+    this._observableSpec.onError(error)
+    throw new Error()
+}
+
+Subscribe.prototype.onCompleted = function(value) {
+    this._isCompleted = true
+    return this._observableSpec.onCompleted(value)
 }
